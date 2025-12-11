@@ -1,7 +1,0 @@
-venv/
-.venv/
-__pycache__/
-*.so
-*.dll
-*.pyc
-.DS_Store
