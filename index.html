@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>真人體感格鬥 | Real-Time Combat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 全域設定 --- */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #050505; /* 極深灰背景 */
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow: hidden; /* 防止捲動 */
+            /* 背景放射狀漸層 */
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+        }
+
+        /* --- 遊戲容器 --- */
+        #webcam-container {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            display: none; /* 由 JS 控制顯示 */
+            /* 霓虹邊框發光特效 */
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.1), inset 0 0 100px rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #webcam-video, #output-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        #webcam-video { visibility: hidden; } /* 隱藏原始影像，只看 Canvas */
+
+        /* --- 載入文字 --- */
+        #loading-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ffff;
+            font-family: 'Black Ops One', cursive;
+            font-size: 40px;
+            z-index: 10;
+            text-shadow: 0 0 20px #00ffff;
+            letter-spacing: 2px;
+            display: none;
+        }
+
+        /* --- ⏸️ 暫停按鈕 (左上角小按鈕) --- */
+        #pause-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid cyan;
+            color: cyan;
+            font-size: 18px;
+            padding: 5px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: none; /* 遊戲中才顯示 */
+            transition: all 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        #pause-btn:hover {
+            background: cyan;
+            color: black;
+            box-shadow: 0 0 15px cyan;
+        }
+
+        /* --- ⏸️ 暫停選單 (覆蓋層) --- */
+        #pause-menu {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 101; /* 最上層 */
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pause-menu h1 {
+            color: yellow;
+            font-family: 'Black Ops One', sans-serif;
+            font-size: 60px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px orange;
+            letter-spacing: 5px;
+        }
+
+        .pause-option {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 24px;
+            padding: 12px 50px;
+            margin: 15px;
+            cursor: pointer;
+            width: 320px;
+            text-align: center;
+            border-radius: 50px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .pause-option:hover { transform: scale(1.05); }
+
+        #btn-resume { border-color: lime; color: lime; }
+        #btn-resume:hover { background: lime; color: black; box-shadow: 0 0 20px lime; }
+
+        #btn-restart { border-color: cyan; color: cyan; }
+        #btn-restart:hover { background: cyan; color: black; box-shadow: 0 0 20px cyan; }
+
+        #btn-quit { border-color: #ff0055; color: #ff0055; }
+        #btn-quit:hover { background: #ff0055; color: white; box-shadow: 0 0 20px #ff0055; }
+
+
+        /* --- 🏆 排行榜懸浮層 (賽博龐克風格) --- */
+        #leaderboard-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        #leaderboard-box {
+            width: 900px;
+            max-width: 95%;
+            background: rgba(10, 20, 30, 0.9);
+            border: 1px solid cyan;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            
+            /* ✅ 這裡維持高度修正 */
+            height: 90%; 
+            
+            border-radius: 4px;
+        }
+
+        .lb-header {
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid cyan;
+            background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,255,255,0.1), rgba(0,0,0,0));
+        }
+
+        .lb-header h1 {
+            margin: 0;
+            color: #fff;
+            font-family: 'Black Ops One', cursive;
+            font-size: 50px;
+            text-shadow: 2px 2px 0px #00aaaa;
+            letter-spacing: 3px;
+        }
+
+        .lb-titles {
+            display: flex; padding: 15px;
+            font-weight: 900; color: cyan;
+            background: rgba(0, 255, 255, 0.05);
+            font-size: 20px;
+            letter-spacing: 1px;
+            
+            /* ✅ 這裡維持寬度修正 */
+            box-sizing: border-box; 
+        }
+
+        #leaderboard-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .lb-row {
+            display: flex; padding: 18px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 22px;
+            font-family: 'Black Ops One', sans-serif;
+            transition: all 0.2s;
+            
+            /* ✅ 這裡維持寬度修正 */
+            box-sizing: border-box; 
+        }
+        .lb-row:hover { background: rgba(0, 255, 255, 0.1); transform: scale(1.01); }
+
+        .lb-row:nth-child(1) { color: #FFD700; text-shadow: 0 0 10px #FFD700; } /* 金 */
+        .lb-row:nth-child(2) { color: #C0C0C0; text-shadow: 0 0 10px #C0C0C0; } /* 銀 */
+        .lb-row:nth-child(3) { color: #CD7F32; text-shadow: 0 0 10px #CD7F32; } /* 銅 */
+
+        .col-rank { width: 15%; text-align: center; }
+        .col-name { width: 35%; text-align: left; font-family: 'Noto Sans TC', sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .col-score { width: 20%; text-align: center; }
+        .col-grade { width: 10%; text-align: center; }
+        
+        /* 👇 這裡把 font-family 改掉了，看起來會比較順眼 */
+        .col-date { 
+            width: 20%; 
+            text-align: right; 
+            font-size: 16px; 
+            opacity: 0.8; 
+            font-family: 'Noto Sans TC', sans-serif; /* 改成現代字體 */
+            padding-right: 15px;
+            letter-spacing: 1px;
+        }
+
+        /* 滾動條美化 */
+        #leaderboard-list::-webkit-scrollbar { width: 6px; }
+        #leaderboard-list::-webkit-scrollbar-track { background: #000; }
+        #leaderboard-list::-webkit-scrollbar-thumb { background: cyan; border-radius: 3px; }
+
+        #close-lb-btn {
+            margin: 20px; padding: 12px 60px; font-size: 24px;
+            font-family: 'Black Ops One', cursive;
+            background: transparent; color: cyan;
+            border: 2px solid cyan;
+            cursor: pointer; transition: 0.3s; align-self: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        #close-lb-btn:hover {
+            background: cyan; color: black; box-shadow: 0 0 30px cyan;
+        }
+    </style>
+</head>
+<body>
+    <div id="webcam-container">
+        <video id="webcam-video" autoplay playsinline></video>
+        <canvas id="output-canvas"></canvas>
+        <div id="loading-text">SYSTEM INITIALIZING...</div>
+
+        <button id="pause-btn">❚❚</button>
+
+        <div id="pause-menu">
+            <h1>GAME PAUSED</h1>
+            <button class="pause-option" id="btn-resume">RESUME</button>
+            <button class="pause-option" id="btn-restart">RESTART</button>
+            <button class="pause-option" id="btn-quit">QUIT</button>
+        </div>
+
+        <div id="leaderboard-overlay">
+            <div id="leaderboard-box">
+                <div class="lb-header"><h1>TOP 50 RANKING</h1></div>
+                <div class="lb-titles">
+                    <div class="col-rank">RANK</div>
+                    <div class="col-name">PLAYER</div>
+                    <div class="col-score">SCORE</div>
+                    <div class="col-grade">GRADE</div>
+                    <div class="col-date">DATE</div>
+                </div>
+                <div id="leaderboard-list"></div>
+                <button id="close-lb-btn">BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/movenet"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
