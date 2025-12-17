@@ -12,6 +12,9 @@
 * ```PySerial```：實現電腦與樹莓派直接的連接
 * ```Socket.IO```：實現系統與樹莓派之間的傳輸
 * ```HTML5.Canvas```：遊戲畫面繪製
+## 系統架構
+<img width="2076" height="1182" alt="mermaid-diagram-2025-12-17-233611" src="https://github.com/user-attachments/assets/2f5fe095-9f48-44f5-bbb6-c2c9656eaac5" />
+
 ## Implementation Process
 * 一開始我們希望對打的方式更接近於用攝像機偵測到人體擺出的各種招式進行攻擊，但最後因為只能偵測到一些簡單的動作，因此改為使用人體手腕的點去觸碰畫面中的各個格子就能發出各種攻擊。
 ## Knowledge from Lecture
