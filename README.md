@@ -14,13 +14,26 @@
 * ```HTML5.Canvas```：遊戲畫面繪製
 ## Implementation Process
 * 一開始我們希望對打的方式更接近於用攝像機偵測到人體擺出的各種招式進行攻擊，但最後因為只能偵測到一些簡單的動作，因此改為使用人體手腕的點去觸碰畫面中的各個格子就能發出各種攻擊。
-* 
 ## Knowledge from Lecture
-
+* ssh
+* raspberry pi
 ## Installation
+### 燈條安裝
+在樹莓派中安裝
+```
+sudo apt-get install python3-pip python3-dev
+# 安裝通訊與 GPIO 套件
+sudo pip3 install rpi_ws281x python-socketio eventlet
+```
+當需要啟用燈條時必須在樹莓派中輸入```sudo python3 led_server.py```才能啟動燈條
+### 樹莓派的接線
+Raspberry Pi GPIO18 –-> LED DIN（綠線）
+Raspberry Pi 5V –––> LED 5V（紅線）
+Raspberry Pi GND ––-> LED GND（白線）
 需更改```main.js```中的```const SOCKET_URL = 'http://192.168.1.22:3000'```將ip改為你的樹莓派的ip。
 ## Usage
-
+需開啟```browser-sync start --server --files "index.html, script.js" --host 0.0.0.0 --port 8081```接著在網頁輸入```localhost:8081/index.html```
+就可以開始玩了
 ## Job Assignment
 
 ## References
