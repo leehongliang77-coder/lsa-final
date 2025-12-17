@@ -19,21 +19,30 @@
 * raspberry pi
 ## Installation
 ### 燈條安裝
-在樹莓派中安裝
-```
-sudo apt-get install python3-pip python3-dev
-# 安裝通訊與 GPIO 套件
-sudo pip3 install rpi_ws281x python-socketio eventlet
-```
-當需要啟用燈條時必須在樹莓派中輸入```sudo python3 led_server.py```才能啟動燈條
-### 樹莓派的接線
 Raspberry Pi GPIO18 –-> LED DIN（綠線）
 Raspberry Pi 5V –––> LED 5V（紅線）
 Raspberry Pi GND ––-> LED GND（白線）
+<img width="1190" height="748" alt="image" src="https://github.com/user-attachments/assets/31fad961-d8f4-4246-968d-fe9025a7b30a" />
+在樹莓派中安裝
+```
+sudo apt-get install python3-pip python3-dev
+sudo pip3 install rpi_ws281x
+sudo pip3 install adafruit-circuitpython-neopixel
+sudo python3 -m pip install –force-reinstall adafruit-blinka
+```
+當需要啟用燈條時必須在樹莓派中輸入```sudo python3 led_server.py```才能啟動燈條
 需更改```main.js```中的```const SOCKET_URL = 'http://192.168.1.22:3000'```將ip改為你的樹莓派的ip。
 ## Usage
 需開啟```browser-sync start --server --files "index.html, script.js" --host 0.0.0.0 --port 8081```接著在網頁輸入```localhost:8081/index.html```
 就可以開始玩了
 ## Job Assignment
-
+| 組員 | 工作內容 | 
+| -------- | -------- |
+| 劉柏廷     | 簡報製作,實作前端     |
+| 李宏量     | 後端程式碼,樹梅派編成     |
+| 葉子揚     | 前端程式碼     |
+| 劉恆宇     | 前端程式碼,樹梅派編成     |
 ## References
+* LED連接與特效：https://core-electronics.com.au/guides/fully-addressable-rgb-raspberry-pi/
+* MOVENET：https://github.com/tensorflow/docs/blob/master/site/en/hub/tutorials/movenet.ipynb
+* SOCKET IO連接樹莓派：https://blog.gtwang.org/iot/display-real-time-mpu-6050-sensor-data-using-node-js-and-websocket/
