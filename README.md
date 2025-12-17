@@ -5,20 +5,20 @@
 * led strip WS2812 NT260
 * 杜邦線 NT50
 ## Existing Library/Software
-* TensorFlow.js
-* MoveNet
-* Face-api.js
-* Flask
-* PySerial
-* Socket.IO
-* HTML5.Canvas
+* ```TensorFlow.js```：瀏覽器端的機器學習
+* ```MoveNet```：負責偵測人體姿態模型
+* ```Face-api.js```：用於偵測臉部特徵與定位
+* ```Flask```：負責處理API請求
+* ```PySerial```：實現電腦與樹莓派直接的連接
+* ```Socket.IO```：實現系統與樹莓派之間的傳輸
+* ```HTML5.Canvas```：遊戲畫面繪製
 ## Implementation Process
 * 一開始我們希望對打的方式更接近於用攝像機偵測到人體擺出的各種招式進行攻擊，但最後因為只能偵測到一些簡單的動作，因此改為使用人體手腕的點去觸碰畫面中的各個格子就能發出各種攻擊。
 * 
 ## Knowledge from Lecture
 
 ## Installation
-
+需更改```main.js```中的```const SOCKET_URL = 'http://192.168.1.22:3000'```將ip改為你的樹莓派的ip。
 ## Usage
 
 ## Job Assignment
